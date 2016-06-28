@@ -1,5 +1,6 @@
 import copy
 import random
+import signal
 
 BLANK='--'
 WHITE='W'
@@ -163,11 +164,25 @@ class HumanPlayer:
 class RandomPlayer:
     def __init__(self,color,time=1):
         self.color = color
+        self.time = time
 
     def play(self):
-        moves=main_board.moves(self.color)
-        if moves == []:
-            return None
+        def handler(signum, frame):
+            raise IOError
+
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(self.time)
+
+        try:  ## here we do the hard computation
+            moves=main_board.moves(self.color)
+            x=0
+            while self.time!=0:  # pretend we are doing something unless time is 0
+                x=x+1
+
+        except IOError: ## here quickly obtain a move
+            signal.alarm(0)
+
+        # here we return a solution very quickly
         q,xf,yf,xb,yb = random.choice(moves)
 
         if not main_board.is_legal_move(q,xf,yf) or not main_board.is_legal_jump(q,xf,yf,xb,yb):
@@ -175,20 +190,26 @@ class RandomPlayer:
             input("")
         return q,xf,yf,xb,yb
 
+
+### Main Program
+
 main_board=Board()
 
 
 #p1 = HumanPlayer(WHITE)
 #p2 = HumanPlayer(BLACK)
 
-player_white = RandomPlayer(WHITE)
-player_black = RandomPlayer(BLACK)
+player_white = RandomPlayer(WHITE,0) # Random Player (fast)
+player_black = RandomPlayer(BLACK,1) # Random Player (one sec per move)
+
+plays = 0
 
 while True:
     print(main_board)
     if main_board.can_play(WHITE):
         q,xf,yf,xb,yb = player_white.play()
         Board.show_move(WHITE,q,xf,yf,xb,yb)
+        plays += 1
     else:
         print("Jugador",BLACK,"ha ganado")
         break
@@ -197,7 +218,10 @@ while True:
     if main_board.can_play(BLACK):
         q,xf,yf,xb,yb = player_black.play()
         Board.show_move(BLACK,q,xf,yf,xb,yb)
+        plays += 1
     else:
         print("Jugador",WHITE,"ha ganado")
         break
     main_board = main_board.succ(q,xf,yf,xb,yb)
+
+print("Fin del juego en",plays,"jugadas.")
