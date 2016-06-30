@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*
 import copy
 import random
 import signal
@@ -45,11 +46,13 @@ class Board:
         bsucc.board[xb][yb] = BLOCKED
         return bsucc
 
+    @staticmethod
     def queen2str(q):
         if q<4:
             return BLACK+str(q)
         return WHITE+str(q%4)
 
+    @staticmethod
     def show_move(color,q,xf,yf,xb,yb):
         print("Jugador",color,"mueve reina",q%4,"hasta","("+str(xf)+","+str(yf)+")","bloqueando","("+str(xb)+","+str(yb)+")"+"\n")
 
